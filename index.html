@@ -1189,7 +1189,6 @@
 
       // --- DOM Elements ---
       const stageBoard = document.getElementById("stage-board");
-      const stageBoardOuter = document.getElementById("stage-board-outer");
       const centerStageArea = document.getElementById("center-stage-area");
       const projectTitleInput = document.getElementById("project-title");
       const saveBadge = document.getElementById("save-badge");
@@ -1570,7 +1569,6 @@
 
       // --- Render Stage Items & Handles ---
       function renderStageItems() {
-        // Remove existing items
         stageBoard.querySelectorAll(".stage-item").forEach(el => el.remove());
 
         state.items.forEach((item, idx) => {
@@ -2180,8 +2178,7 @@
 
       // Download Standalone HTML Webpage
       document.getElementById("btn-download-html").addEventListener("click", () => {
-        const docHtml = "<!DOCTYPE html>
-" + document.documentElement.outerHTML;
+        const docHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
         const blob = new Blob([docHtml], { type: "text/html;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
