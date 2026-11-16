@@ -1,0 +1,24 @@
+{
+  "app": "RiderBox",
+  "version": 2,
+  "exportedAt": "2026-11-16T10:45:57.529Z",
+  "title": "Új Színpadi Rider",
+  "stageW": 12,
+  "stageD": 8,
+  "items": [
+    {
+      "id": "el_gv37dh1",
+      "type": "main_curtain",
+      "name": "Főfüggöny (Nyitott) 1",
+      "x": 1.5,
+      "y": 4.5,
+      "w": 8,
+      "h": 0.45,
+      "rot": 0,
+      "color": "#dc2626",
+      "channel": "",
+      "note": "",
+      "isTech": false
+    }
+  ]
+}
