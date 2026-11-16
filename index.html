@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RiderBox — Színházi, TV & Rendezvény Stage Plot Tervező</title>
+  <style>
+    :root {
+      --bg-app: #0f172a;
+      --bg-panel: #1e293b;
+      --bg-panel-alt: #0b1120;
+      --bg-hover: #334155;
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-strong: #0284c7;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --stage-bg: #141b2d;
+      --grid-minor: rgba(148, 163, 184, 0.08);
+      --grid-major: rgba(148, 163, 184, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+
+    /* App Shell */
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Top Header */
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+      color: var(--accent);
+    }
+
+    .project-title-input {
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 170px;
+      max-width: 240px;
+    }
+
+    .project-title-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .save-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      white-space: nowrap;
+    }
+
+    .save-badge.unsaved {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stage-dim-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-app);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .stage-dim-group input {
+      width: 48px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 4px;
+      padding: 3px 5px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--bg-hover);
+      color: var(--text-main);
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 7px 11px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.05s;
+      min-height: 36px;
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: #475569;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent-strong);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+
+    .btn-success {
+      background: #059669;
+      border-color: #10b981;
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background: #047857;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.32);
+    }
+
+    .btn-active {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-icon {
+      padding: 7px 9px;
+      min-width: 36px;
+    }
+
+    /* Main Workspace */
+    .workspace {
+      display: grid;
+      grid-template-columns: 270px 1fr 310px;
+      flex: 1;
+      min-height: calc(100vh - 54px);
+      position: relative;
+    }
+
+    /* Sidebars */
+    .sidebar {
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 54px);
+      position: sticky;
+      top: 54px;
+      overflow-y: auto;
+      z-index: 25;
+    }
+
+    .sidebar-right {
+      border-right: none;
+      border-left: 1px solid var(--border);
+    }
+
+    .panel-section {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin: 0 0 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Category Pills */
+    .cat-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .cat-pill {
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 30px;
+    }
+
+    .cat-pill.active {
+      background: var(--accent-strong);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Palette Grid - Tablet Friendly Touch Targets */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .palette-item {
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 6px;
+      cursor: grab;
+      min-height: 76px;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .palette-item:hover, .palette-item:active {
+      border-color: var(--accent);
+      background: #17233b;
+    }
+
+    .palette-item svg {
+      width: 34px;
+      height: 28px;
+      pointer-events: none;
+    }
+
+    .palette-item span {
+      font-size: 11.5px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--text-main);
+      pointer-events: none;
+    }
+
+    /* Center Stage Area */
+    .center-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      background: var(--bg-panel-alt);
+      min-height: calc(100vh - 54px);
+      overflow: auto;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .stage-status-bar {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .stage-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .stage-orientation-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 5px 12px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      margin: 6px 0;
+    }
+
+    .stage-board-outer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      background: #090e1a;
+      border: 2px solid #475569;
+      border-radius: 10px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      max-width: 100%;
+    }
+
+    #stage-board {
+      position: relative;
+      background-color: var(--stage-bg);
+      background-image:
+        linear-gradient(to right, var(--grid-major) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-major) 1px, transparent 1px),
+        linear-gradient(to right, var(--grid-minor) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-minor) 1px, transparent 1px);
+      border: 2px solid var(--accent);
+      overflow: visible;
+      touch-action: none;
+    }
+
+    #stage-board.no-grid {
+      background-image: none;
+    }
+
+    .center-line-v {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      border-left: 1px dashed rgba(56, 189, 248, 0.35);
+      pointer-events: none;
+    }
+
+    .center-line-h {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      border-top: 1px dashed rgba(56, 189, 248, 0.25);
+      pointer-events: none;
+    }
+
+    .stage-corner-tag {
+      position: absolute;
+      bottom: 4px;
+      right: 6px;
+      font-size: 10px;
+      color: rgba(148, 163, 184, 0.65);
+      pointer-events: none;
+      font-weight: 600;
+    }
+
+    /* Stage Items */
+    .stage-item {
+      position: absolute;
+      cursor: move;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-origin: center center;
+    }
+
+    .stage-item.selected {
+      outline: 2px dashed var(--accent);
+      outline-offset: 2px;
+      z-index: 20;
+    }
+
+    .stage-item-visual {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .stage-item-visual svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+
+    .item-index-badge {
+      position: absolute;
+      top: -11px;
+      left: -11px;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1.5px solid var(--accent);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      line-height: 1.2;
+      pointer-events: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      z-index: 5;
+    }
+
+    .hide-badges .item-index-badge {
+      display: none;
+    }
+
+    /* Resize & Rotate Handles - Large touch targets for tablet */
+    .handle {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: #ffffff;
+      border: 2.5px solid var(--accent-strong);
+      border-radius: 50%;
+      z-index: 30;
+      touch-action: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .handle::after {
+      content: "";
+      position: absolute;
+      inset: -8px;
+    }
+
+    .handle-nw { top: -9px; left: -9px; cursor: nwse-resize; }
+    .handle-n  { top: -9px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .handle-ne { top: -9px; right: -9px; cursor: nesw-resize; }
+    .handle-e  { top: 50%; right: -9px; transform: translateY(-50%); cursor: ew-resize; }
+    .handle-se { bottom: -9px; right: -9px; cursor: nwse-resize; }
+    .handle-s  { bottom: -9px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .handle-sw { bottom: -9px; left: -9px; cursor: nesw-resize; }
+    .handle-w  { top: 50%; left: -9px; transform: translateY(-50%); cursor: ew-resize; }
+
+    .handle-rotate {
+      top: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 22px;
+      background: var(--warning);
+      border-color: #fff;
+      cursor: grab;
+    }
+
+    .handle-rotate::before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      width: 2px;
+      height: 10px;
+      background: var(--warning);
+      transform: translateX(-50%);
+    }
+
+    /* Legend Box (Jelmagyarázat) */
+    .legend-box {
+      width: 100%;
+      max-width: 1100px;
+      margin-top: 16px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .legend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .legend-header h3 {
+      margin: 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--accent);
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 8px;
+    }
+
+    .legend-entry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 9px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .legend-entry:hover, .legend-entry.active {
+      border-color: var(--accent);
+    }
+
+    .legend-num {
+      background: var(--accent-strong);
+      color: #fff;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      min-width: 26px;
+      text-align: center;
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.35);
+      flex-shrink: 0;
+    }
+
+    .legend-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .legend-name {
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .legend-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Properties Form */
+    .prop-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .prop-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .prop-field.full {
+      grid-column: span 2;
+    }
+
+    .prop-field label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .prop-field input[type="text"],
+    .prop-field input[type="number"],
+    .prop-field select {
+      width: 100%;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 6px;
+      padding: 7px 8px;
+      font-size: 13px;
+      min-height: 36px;
+    }
+
+    .prop-field input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .color-chip {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .color-chip.active {
+      border-color: #fff;
+      transform: scale(1.08);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    /* Patch List Table */
+    .patch-table-wrap {
+      overflow-x: auto;
+    }
+
+    table.patch-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    table.patch-table th,
+    table.patch-table td {
+      padding: 6px 6px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    table.patch-table th {
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    table.patch-table input {
+      width: 100%;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 12px;
+    }
+
+    /* Mobile / Tablet Drawer Toggles */
+    .mobile-drawer-bar {
+      display: none;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 12px;
+      gap: 8px;
+      justify-content: space-between;
+      position: sticky;
+      top: 52px;
+      z-index: 35;
+    }
+
+    .drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.65);
+      z-index: 45;
+    }
+
+    .drawer-backdrop.open {
+      display: block;
+    }
+
+    /* Tablet & Mobile Responsive Breakpoint */
+    @media (max-width: 1080px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .mobile-drawer-bar {
+        display: flex;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        max-height: 100vh;
+        width: 310px;
+        max-width: 86vw;
+        z-index: 50;
+        transform: translateX(-105%);
+        transition: transform 0.22s ease;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.6);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-right {
+        left: auto;
+        right: 0;
+        transform: translateX(105%);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+      }
+
+      .sidebar-right.open {
+        transform: translateX(0);
+      }
+
+      .center-area {
+        padding: 12px 8px;
+      }
+    }
+
+    /* Fullscreen adjustments */
+    :fullscreen .app-shell,
+    :-webkit-full-screen .app-shell {
+      min-height: 100vh;
+      background: var(--bg-app);
+    }
+
+    /* Drag & Drop JSON Overlay */
+    .drop-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(14, 165, 233, 0.2);
+      border: 4px dashed var(--accent);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      backdrop-filter: blur(4px);
+    }
+
+    .drop-overlay.active {
+      display: flex;
+    }
+
+    /* Print Styles */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 10mm;
+      }
+
+      html, body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        min-height: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      .topbar,
+      .mobile-drawer-bar,
+      .sidebar,
+      .stage-status-bar,
+      .handle,
+      .drawer-backdrop,
+      .no-print {
+        display: none !important;
+      }
+
+      .workspace {
+        display: block !important;
+        min-height: auto !important;
+      }
+
+      .center-area {
+        background: #ffffff !important;
+        padding: 0 !important;
+        min-height: auto !important;
+        display: block !important;
+        overflow: visible !important;
+      }
+
+      .print-header {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: baseline;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 6px;
+        margin-bottom: 10px;
+      }
+
+      .stage-wrapper {
+        max-width: 100% !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .stage-orientation-label {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-color: #94a3b8 !important;
+      }
+
+      .stage-board-outer {
+        background: #ffffff !important;
+        border: 1.5px solid #0f172a !important;
+        box-shadow: none !important;
+        padding: 4px !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      #stage-board {
+        background-color: #f8fafc !important;
+        background-image:
+          linear-gradient(to right, rgba(15, 23, 42, 0.15) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(15, 23, 42, 0.15) 1px, transparent 1px) !important;
+        border-color: #0f172a !important;
+        transform-origin: top left;
+      }
+
+      .item-index-badge {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #0f172a !important;
+        box-shadow: none !important;
+      }
+
+      .legend-box {
+        background: #ffffff !important;
+        border: 1.5px solid #0f172a !important;
+        color: #0f172a !important;
+        margin-top: 10px !important;
+        padding: 8px 10px !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .legend-header h3 {
+        color: #0f172a !important;
+      }
+
+      .legend-entry {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+      }
+
+      .legend-name {
+        color: #0f172a !important;
+      }
+
+      .legend-meta {
+        color: #475569 !important;
+      }
+
+      .print-patch-section {
+        display: block !important;
+        margin-top: 14px;
+        break-before: auto;
+      }
+
+      .print-patch-section table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+
+      .print-patch-section th,
+      .print-patch-section td {
+        border: 1px solid #94a3b8;
+        padding: 4px 6px;
+        color: #0f172a;
+      }
+    }
+
+    .print-header,
+    .print-patch-section {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="drop-overlay" id="drop-overlay">Engedd el a .JSON projektfájlt a betöltéshez</div>
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+  <div class="app-shell">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M3 9h18M9 4v16" />
+          </svg>
+          <span>RiderBox</span>
+        </div>
+        <input type="text" id="project-title" class="project-title-input" value="Új Színpadi Rider" aria-label="Projekt neve" />
+        <span id="save-badge" class="save-badge">Mentve</span>
+      </div>
+
+      <div class="toolbar-actions">
+        <div class="stage-dim-group" title="Színpad szélessége és mélysége méterben">
+          <span>Színpad:</span>
+          <input type="text" inputmode="decimal" id="stage-width-input" value="12" aria-label="Színpad szélessége (m)" />
+          <span>m ×</span>
+          <input type="text" inputmode="decimal" id="stage-depth-input" value="8" aria-label="Színpad mélysége (m)" />
+          <span>m</span>
+        </div>
+
+        <button class="btn btn-icon" id="btn-undo" title="Visszavonás (Ctrl+Z)" disabled>↶</button>
+        <button class="btn btn-icon" id="btn-redo" title="Újra (Ctrl+Y)" disabled>↷</button>
+
+        <button class="btn btn-active" id="btn-toggle-grid" title="Rács és illesztés">Rács: BE</button>
+        <button class="btn btn-active" id="btn-toggle-badges" title="Sorszámok megjelenítése a rajzon"># Sorszám</button>
+        <button class="btn" id="btn-fullscreen" title="Teljes képernyő (Fullscreen)">⛶ Teljes képernyő</button>
+
+        <button class="btn" id="btn-load-sample" title="Színházi minta betöltése">Minta</button>
+        <button class="btn" id="btn-open-json" title="Korábbi JSON projekt megnyitása">📂 JSON Megnyitás</button>
+        <input type="file" id="json-file-input" accept=".json,application/json" style="display:none" />
+
+        <button class="btn btn-primary" id="btn-save-json" title="Projekt mentése JSON fájlba">💾 JSON Mentés</button>
+        <button class="btn" id="btn-download-html" title="Teljes alkalmazás letöltése önálló HTML weboldalként">⬇ Weboldal (.html)</button>
+        <button class="btn btn-success" id="btn-print" title="Nyomtatás / PDF export">🖨 Nyomtatás / PDF</button>
+      </div>
+    </header>
+
+    <!-- Mobile / Tablet Drawer Bar -->
+    <div class="mobile-drawer-bar">
+      <button class="btn btn-primary" id="btn-open-left-drawer">➕ Eszköztár & Elem hozzáadása</button>
+      <button class="btn" id="btn-open-right-drawer">⚙ Tulajdonságok & Lista</button>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+      <!-- Left Sidebar: Asset Palette -->
+      <aside class="sidebar sidebar-left" id="sidebar-left">
+        <div class="panel-section">
+          <div class="panel-title">
+            <span>Eszköztár (Koppints vagy húzd)</span>
+            <button class="btn btn-icon no-print" id="btn-close-left-drawer" style="display:none; min-height:28px; padding:2px 8px;">✕</button>
+          </div>
+          <div class="cat-pills" id="category-pills"></div>
+          <div class="palette-grid" id="palette-grid"></div>
+        </div>
+      </aside>
+
+      <!-- Center Canvas Area -->
+      <main class="center-area" id="center-stage-area">
+        <div class="print-header" id="print-header">
+          <div>
+            <strong id="print-title-text" style="font-size:18px;">Új Színpadi Rider</strong>
+            <div id="print-subtitle-text" style="font-size:12px; color:#475569;">Színpad: 12m × 8m</div>
+          </div>
+          <div style="font-size:11px; color:#475569;">RiderBox Stage Plot</div>
+        </div>
+
+        <div class="stage-status-bar">
+          <span id="stage-info-text">Színpad: 12m × 8m | Koppints egy elemre a kijelöléshez, húzd a sarkokat az átméretezéshez</span>
+          <span id="item-count-text">0 elem</span>
+        </div>
+
+        <div class="stage-wrapper">
+          <div class="stage-orientation-label">▲ HÁTSÓ SZÍNPAD / BACKDROP / UPSTAGE ▲</div>
+
+          <div class="stage-board-outer" id="stage-board-outer">
+            <div id="stage-board">
+              <div class="center-line-v"></div>
+              <div class="center-line-h"></div>
+              <div class="stage-corner-tag">SL (BAL SZÍNPAD)</div>
+            </div>
+          </div>
+
+          <div class="stage-orientation-label">▼ NÉZŐTÉR / PROSZCÉNIUM / KAMERÁK IRÁNYA (FOH) ▼</div>
+
+          <!-- Jelmagyarázat (Legend Box) -->
+          <section class="legend-box" id="legend-box">
+            <div class="legend-header">
+              <h3>Jelmagyarázat (Színpadi elemek)</h3>
+              <span id="legend-count" style="font-size:12px; color:var(--text-muted);">0 tétel</span>
+            </div>
+            <div class="legend-grid" id="legend-grid">
+              <div style="font-size:12px; color:var(--text-muted);">Még nincs elhelyezett elem a színpadon.</div>
+            </div>
+          </section>
+
+          <!-- Print-only Patch List -->
+          <section class="print-patch-section" id="print-patch-section">
+            <h3 style="margin:0 0 6px 0; font-size:13px; text-transform:uppercase;">Technikai Input / Patch Lista</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ch / DMX</th>
+                  <th>Eszköz neve</th>
+                  <th>Típus</th>
+                  <th>Méret (m)</th>
+                  <th>Megjegyzés</th>
+                </tr>
+              </thead>
+              <tbody id="print-patch-tbody"></tbody>
+            </table>
+          </section>
+        </div>
+      </main>
+
+      <!-- Right Sidebar: Inspector & Patch List -->
+      <aside class="sidebar sidebar-right" id="sidebar-right">
+        <div class="panel-section">
+          <div class="panel-title">
+            <span>Kijelölt elem tulajdonságai</span>
+            <button class="btn btn-icon no-print" id="btn-close-right-drawer" style="display:none; min-height:28px; padding:2px 8px;">✕</button>
+          </div>
+          <div id="inspector-content">
+            <p style="font-size:12px; color:var(--text-muted); margin:0;">Válassz ki egy elemet a színpadon a méretezéshez, forgatáshoz vagy átnevezéshez.</p>
+          </div>
+        </div>
+
+        <div class="panel-section" style="flex:1;">
+          <div class="panel-title">
+            <span>Input / Patch Lista</span>
+            <span id="patch-count" style="font-size:11px;">0</span>
+          </div>
+          <div class="patch-table-wrap">
+            <table class="patch-table">
+              <thead>
+                <tr>
+                  <th style="width:32px;">#</th>
+                  <th style="width:58px;">Ch/ID</th>
+                  <th>Név / Megjegyzés</th>
+                </tr>
+              </thead>
+              <tbody id="patch-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // --- Asset Catalog ---
+      const CATALOG = [
+        // Színpad & Textil
+        { type: "black_velvet", cat: "Textil & Színpad", label: "Fekete bársony", w: 4.0, h: 0.4, color: "#1e293b", isTech: false },
+        { type: "white_velvet", cat: "Textil & Színpad", label: "Fehér bársony / Horizont", w: 4.0, h: 0.4, color: "#f1f5f9", isTech: false },
+        { type: "side_leg", cat: "Textil & Színpad", label: "Oldalfüggöny (Láb)", w: 0.35, h: 2.2, color: "#334155", isTech: false },
+        { type: "main_curtain", cat: "Textil & Színpad", label: "Főfüggöny (Nyitott)", w: 8.0, h: 0.45, color: "#dc2626", isTech: false },
+
+        // Épített & Díszlet
+        { type: "real_wall", cat: "Épített & Díszlet", label: "Valódi fal (Épített)", w: 4.0, h: 0.35, color: "#64748b", isTech: false },
+        { type: "set_wall", cat: "Épített & Díszlet", label: "Díszletfal (Tömör)", w: 3.0, h: 0.25, color: "#94a3b8", isTech: false },
+        { type: "set_door", cat: "Épített & Díszlet", label: "Díszletfal (Ajtóval)", w: 2.5, h: 0.3, color: "#f59e0b", isTech: false },
+        { type: "set_window", cat: "Épített & Díszlet", label: "Díszletfal (Ablakkal)", w: 2.5, h: 0.3, color: "#38bdf8", isTech: false },
+        { type: "prop_rect", cat: "Épített & Díszlet", label: "Dobogó / Téglalap", w: 2.0, h: 1.0, color: "#10b981", isTech: false },
+        { type: "prop_circle", cat: "Épített & Díszlet", label: "Oszlop / Kör elem", w: 1.2, h: 1.2, color: "#8b5cf6", isTech: false },
+        { type: "prop_triangle", cat: "Épített & Díszlet", label: "Háromszög / Ék", w: 1.5, h: 1.5, color: "#14b8a6", isTech: false },
+        { type: "prop_trapezoid", cat: "Épített & Díszlet", label: "Trapéz / Rámpa", w: 2.0, h: 1.2, color: "#ec4899", isTech: false },
+
+        // Szereplők & Mozgás
+        { type: "actor_top", cat: "Szereplő & Mozgás", label: "Szereplő (Felülnézet)", w: 0.65, h: 0.55, color: "#38bdf8", isTech: false },
+        { type: "arrow_straight", cat: "Szereplő & Mozgás", label: "Mozgás nyíl (Egyenes)", w: 2.2, h: 0.45, color: "#facc15", isTech: false },
+        { type: "arrow_curved", cat: "Szereplő & Mozgás", label: "Mozgás nyíl (Ívelt)", w: 2.2, h: 1.1, color: "#fb923c", isTech: false },
+
+        // Bútor & Effekt
+        { type: "chair", cat: "Bútor & Effekt", label: "Szék", w: 0.55, h: 0.55, color: "#a855f7", isTech: false },
+        { type: "sofa", cat: "Bútor & Effekt", label: "Kanapé / Fotel", w: 2.0, h: 0.85, color: "#f59e0b", isTech: false },
+        { type: "table_rect", cat: "Bútor & Effekt", label: "Asztal (Szögletes)", w: 1.6, h: 0.8, color: "#d97706", isTech: false },
+        { type: "table_round", cat: "Bútor & Effekt", label: "Asztal (Kerek)", w: 1.1, h: 1.1, color: "#b45309", isTech: false },
+        { type: "music_stand", cat: "Bútor & Effekt", label: "Kottatartó / Pulpitus", w: 0.6, h: 0.45, color: "#60a5fa", isTech: false },
+        { type: "fx_corner", cat: "Bútor & Effekt", label: "Effekt sarok (FX zóna)", w: 1.5, h: 1.5, color: "#ef4444", isTech: true },
+
+        // Hang, Fény & Kamera
+        { type: "mic_stand", cat: "Hang & Fény & TV", label: "Ének / Beszéd mikrofon", w: 0.5, h: 0.5, color: "#38bdf8", isTech: true },
+        { type: "wedge_monitor", cat: "Hang & Fény & TV", label: "Kontroll láda (Wedge)", w: 0.65, h: 0.45, color: "#22c55e", isTech: true },
+        { type: "pa_speaker", cat: "Hang & Fény & TV", label: "PA Hangfal / Sub", w: 0.8, h: 0.8, color: "#0ea5e9", isTech: true },
+        { type: "di_box", cat: "Hang & Fény & TV", label: "DI Box / Stagebox", w: 0.45, h: 0.35, color: "#eab308", isTech: true },
+        { type: "light_spot", cat: "Hang & Fény & TV", label: "Reflektor / Profil lámpa", w: 0.55, h: 0.55, color: "#fde047", isTech: true },
+        { type: "camera_dolly", cat: "Hang & Fény & TV", label: "TV / Film Kamera", w: 0.85, h: 0.65, color: "#f43f5e", isTech: true }
+      ];
+
+      const COLOR_PALETTE = [
+        "#38bdf8", "#10b981", "#f59e0b", "#ef4444",
+        "#a855f7", "#ec4899", "#f8fafc", "#64748b", "#1e293b"
+      ];
+
+      // --- State ---
+      let state = {
+        title: "Új Színpadi Rider",
+        stageW: 12,
+        stageD: 8,
+        gridEnabled: true,
+        showBadges: true,
+        activeCategory: "Összes",
+        selectedId: null,
+        items: []
+      };
+
+      let history = [];
+      let future = [];
+      let isDirty = false;
+      let pxPerMeter = 60;
+
+      // --- DOM Elements ---
+      const stageBoard = document.getElementById("stage-board");
+      const stageBoardOuter = document.getElementById("stage-board-outer");
+      const centerStageArea = document.getElementById("center-stage-area");
+      const projectTitleInput = document.getElementById("project-title");
+      const saveBadge = document.getElementById("save-badge");
+      const stageWidthInput = document.getElementById("stage-width-input");
+      const stageDepthInput = document.getElementById("stage-depth-input");
+      const stageInfoText = document.getElementById("stage-info-text");
+      const itemCountText = document.getElementById("item-count-text");
+      const legendGrid = document.getElementById("legend-grid");
+      const legendCount = document.getElementById("legend-count");
+      const inspectorContent = document.getElementById("inspector-content");
+      const patchTbody = document.getElementById("patch-tbody");
+      const patchCount = document.getElementById("patch-count");
+      const printPatchTbody = document.getElementById("print-patch-tbody");
+      const btnUndo = document.getElementById("btn-undo");
+      const btnRedo = document.getElementById("btn-redo");
+
+      // --- Utility ---
+      function uid() {
+        return "el_" + Math.random().toString(36).slice(2, 9);
+      }
+
+      function markDirty(dirty = true) {
+        isDirty = dirty;
+        if (isDirty) {
+          saveBadge.textContent = "Nem mentett";
+          saveBadge.classList.add("unsaved");
+        } else {
+          saveBadge.textContent = "Mentve";
+          saveBadge.classList.remove("unsaved");
+        }
+      }
+
+      function pushHistory() {
+        history.push(JSON.stringify({
+          title: state.title,
+          stageW: state.stageW,
+          stageD: state.stageD,
+          items: state.items
+        }));
+        if (history.length > 40) history.shift();
+        future = [];
+        updateHistoryButtons();
+        markDirty(true);
+      }
+
+      function updateHistoryButtons() {
+        btnUndo.disabled = history.length === 0;
+        btnRedo.disabled = future.length === 0;
+      }
+
+      function undo() {
+        if (!history.length) return;
+        future.push(JSON.stringify({
+          title: state.title,
+          stageW: state.stageW,
+          stageD: state.stageD,
+          items: state.items
+        }));
+        const prev = JSON.parse(history.pop());
+        state.title = prev.title;
+        state.stageW = prev.stageW;
+        state.stageD = prev.stageD;
+        state.items = prev.items;
+        if (!state.items.some(i => i.id === state.selectedId)) state.selectedId = null;
+        syncInputsFromState();
+        renderAll();
+        updateHistoryButtons();
+      }
+
+      function redo() {
+        if (!future.length) return;
+        history.push(JSON.stringify({
+          title: state.title,
+          stageW: state.stageW,
+          stageD: state.stageD,
+          items: state.items
+        }));
+        const next = JSON.parse(future.pop());
+        state.title = next.title;
+        state.stageW = next.stageW;
+        state.stageD = next.stageD;
+        state.items = next.items;
+        if (!state.items.some(i => i.id === state.selectedId)) state.selectedId = null;
+        syncInputsFromState();
+        renderAll();
+        updateHistoryButtons();
+      }
+
+      function syncInputsFromState() {
+        projectTitleInput.value = state.title;
+        stageWidthInput.value = state.stageW;
+        stageDepthInput.value = state.stageD;
+      }
+
+      // --- Prevent Context Menu on Drawing Area ---
+      centerStageArea.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
+
+      // --- Refresh / Page Unload Protection ---
+      window.addEventListener("beforeunload", (e) => {
+        if (isDirty) {
+          e.preventDefault();
+          e.returnValue = "Nem mentett módosítások vannak a tervrajzon. Biztosan elhagyod az oldalt?";
+          return e.returnValue;
+        }
+      });
+
+      // --- SVG Renderer for Items ---
+      function renderItemSVG(item) {
+        const c = item.color || "#38bdf8";
+        switch (item.type) {
+          case "black_velvet":
+          case "white_velvet": {
+            const stroke = item.type === "white_velvet" ? "#94a3b8" : "#64748b";
+            return `<svg viewBox="0 0 100 20" preserveAspectRatio="none">
+              <rect x="1" y="2" width="98" height="16" rx="2" fill="${c}" stroke="${stroke}" stroke-width="1.5"/>
+              <path d="M5,10 Q15,3 25,10 T45,10 T65,10 T85,10 T95,10" fill="none" stroke="${stroke}" stroke-width="1.5"/>
+            </svg>`;
+          }
+          case "side_leg":
+            return `<svg viewBox="0 0 20 100" preserveAspectRatio="none">
+              <rect x="2" y="1" width="16" height="98" rx="2" fill="${c}" stroke="#94a3b8" stroke-width="1.5"/>
+              <path d="M10,5 Q3,15 10,25 T10,45 T10,65 T10,85 T10,95" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+            </svg>`;
+          case "main_curtain":
+            return `<svg viewBox="0 0 200 20" preserveAspectRatio="none">
+              <rect x="1" y="3" width="82" height="14" rx="3" fill="${c}" stroke="#fecaca" stroke-width="1.4"/>
+              <path d="M5,10 Q15,4 25,10 T45,10 T65,10 T80,10" fill="none" stroke="#fecaca" stroke-width="1.2"/>
+              <line x1="85" y1="10" x2="115" y2="10" stroke="${c}" stroke-width="2" stroke-dasharray="4 3"/>
+              <rect x="117" y="3" width="82" height="14" rx="3" fill="${c}" stroke="#fecaca" stroke-width="1.4"/>
+              <path d="M120,10 Q130,4 140,10 T160,10 T180,10 T195,10" fill="none" stroke="#fecaca" stroke-width="1.2"/>
+            </svg>`;
+          case "real_wall":
+            return `<svg viewBox="0 0 100 20" preserveAspectRatio="none">
+              <defs>
+                <pattern id="hatch_${item.id}" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="0" x2="0" y2="8" stroke="#e2e8f0" stroke-width="2" />
+                </pattern>
+              </defs>
+              <rect x="1" y="1" width="98" height="18" fill="${c}" stroke="#f8fafc" stroke-width="2.2"/>
+              <rect x="1" y="1" width="98" height="18" fill="url(#hatch_${item.id})" opacity="0.65"/>
+            </svg>`;
+          case "set_wall":
+            return `<svg viewBox="0 0 100 20" preserveAspectRatio="none">
+              <rect x="1" y="2" width="98" height="16" fill="${c}" fill-opacity="0.35" stroke="${c}" stroke-width="2"/>
+              <line x1="25" y1="2" x2="25" y2="18" stroke="${c}" stroke-width="1"/>
+              <line x1="50" y1="2" x2="50" y2="18" stroke="${c}" stroke-width="1"/>
+              <line x1="75" y1="2" x2="75" y2="18" stroke="${c}" stroke-width="1"/>
+            </svg>`;
+          case "set_door":
+            return `<svg viewBox="0 0 100 30" preserveAspectRatio="none">
+              <rect x="1" y="10" width="32" height="10" fill="${c}" fill-opacity="0.4" stroke="${c}" stroke-width="1.8"/>
+              <rect x="67" y="10" width="32" height="10" fill="${c}" fill-opacity="0.4" stroke="${c}" stroke-width="1.8"/>
+              <line x1="33" y1="15" x2="62" y2="3" stroke="${c}" stroke-width="2.2"/>
+              <path d="M62,3 A32,32 0 0,1 67,15" fill="none" stroke="${c}" stroke-width="1.2" stroke-dasharray="3 2"/>
+            </svg>`;
+          case "set_window":
+            return `<svg viewBox="0 0 100 20" preserveAspectRatio="none">
+              <rect x="1" y="2" width="28" height="16" fill="${c}" fill-opacity="0.45" stroke="${c}" stroke-width="1.8"/>
+              <rect x="71" y="2" width="28" height="16" fill="${c}" fill-opacity="0.45" stroke="${c}" stroke-width="1.8"/>
+              <rect x="29" y="5" width="42" height="10" fill="none" stroke="${c}" stroke-width="1.5"/>
+              <line x1="29" y1="10" x2="71" y2="10" stroke="${c}" stroke-width="1.4"/>
+            </svg>`;
+          case "prop_rect":
+            return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="2" y="2" width="96" height="96" rx="3" fill="${c}" fill-opacity="0.28" stroke="${c}" stroke-width="2.5"/>
+              <line x1="2" y1="2" x2="98" y2="98" stroke="${c}" stroke-width="1" stroke-opacity="0.45"/>
+              <line x1="98" y1="2" x2="2" y2="98" stroke="${c}" stroke-width="1" stroke-opacity="0.45"/>
+            </svg>`;
+          case "prop_circle":
+            return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <ellipse cx="50" cy="50" rx="47" ry="47" fill="${c}" fill-opacity="0.3" stroke="${c}" stroke-width="2.5"/>
+              <circle cx="50" cy="50" r="4" fill="${c}"/>
+            </svg>`;
+          case "prop_triangle":
+            return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polygon points="50,4 96,96 4,96" fill="${c}" fill-opacity="0.3" stroke="${c}" stroke-width="2.5"/>
+            </svg>`;
+          case "prop_trapezoid":
+            return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polygon points="20,6 80,6 96,94 4,94" fill="${c}" fill-opacity="0.3" stroke="${c}" stroke-width="2.5"/>
+            </svg>`;
+          case "actor_top":
+            return `<svg viewBox="0 0 60 50">
+              <ellipse cx="30" cy="28" rx="24" ry="13" fill="${c}" fill-opacity="0.35" stroke="${c}" stroke-width="2.2"/>
+              <circle cx="30" cy="26" r="10" fill="${c}" stroke="#0f172a" stroke-width="1.5"/>
+              <polygon points="30,6 24,15 36,15" fill="#facc15"/>
+            </svg>`;
+          case "arrow_straight":
+            return `<svg viewBox="0 0 100 30" preserveAspectRatio="none">
+              <line x1="4" y1="15" x2="82" y2="15" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+              <polygon points="96,15 76,5 76,25" fill="${c}"/>
+            </svg>`;
+          case "arrow_curved":
+            return `<svg viewBox="0 0 100 60" preserveAspectRatio="none">
+              <path d="M 8,50 Q 50,4 86,42" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+              <polygon points="94,50 75,44 88,31" fill="${c}"/>
+            </svg>`;
+          case "chair":
+            return `<svg viewBox="0 0 50 50">
+              <rect x="8" y="12" width="34" height="30" rx="5" fill="${c}" fill-opacity="0.35" stroke="${c}" stroke-width="2"/>
+              <rect x="8" y="6" width="34" height="7" rx="3" fill="${c}"/>
+            </svg>`;
+          case "sofa":
+            return `<svg viewBox="0 0 120 55" preserveAspectRatio="none">
+              <rect x="6" y="14" width="108" height="35" rx="6" fill="${c}" fill-opacity="0.32" stroke="${c}" stroke-width="2"/>
+              <rect x="6" y="6" width="108" height="10" rx="4" fill="${c}"/>
+              <rect x="4" y="12" width="12" height="37" rx="4" fill="${c}"/>
+              <rect x="104" y="12" width="12" height="37" rx="4" fill="${c}"/>
+            </svg>`;
+          case "table_rect":
+            return `<svg viewBox="0 0 100 60" preserveAspectRatio="none">
+              <rect x="3" y="3" width="94" height="54" rx="4" fill="${c}" fill-opacity="0.32" stroke="${c}" stroke-width="2.5"/>
+            </svg>`;
+          case "table_round":
+            return `<svg viewBox="0 0 60 60" preserveAspectRatio="none">
+              <ellipse cx="30" cy="30" rx="27" ry="27" fill="${c}" fill-opacity="0.32" stroke="${c}" stroke-width="2.5"/>
+            </svg>`;
+          case "music_stand":
+            return `<svg viewBox="0 0 50 40">
+              <rect x="6" y="8" width="38" height="18" rx="2" fill="${c}" fill-opacity="0.4" stroke="${c}" stroke-width="2"/>
+              <line x1="25" y1="26" x2="25" y2="36" stroke="${c}" stroke-width="2.5"/>
+              <line x1="14" y1="36" x2="36" y2="36" stroke="${c}" stroke-width="2.5"/>
+            </svg>`;
+          case "fx_corner":
+            return `<svg viewBox="0 0 80 80" preserveAspectRatio="none">
+              <rect x="3" y="3" width="74" height="74" rx="6" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="2.2" stroke-dasharray="6 4"/>
+              <text x="40" y="45" text-anchor="middle" fill="${c}" font-size="18" font-weight="800" font-family="sans-serif">FX</text>
+            </svg>`;
+          case "mic_stand":
+            return `<svg viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="14" fill="none" stroke="${c}" stroke-width="2"/>
+              <circle cx="20" cy="20" r="5" fill="${c}"/>
+              <line x1="20" y1="4" x2="20" y2="36" stroke="${c}" stroke-width="1.5"/>
+            </svg>`;
+          case "wedge_monitor":
+            return `<svg viewBox="0 0 60 40" preserveAspectRatio="none">
+              <polygon points="8,6 52,6 58,34 2,34" fill="${c}" fill-opacity="0.38" stroke="${c}" stroke-width="2.2"/>
+              <line x1="6" y1="14" x2="54" y2="14" stroke="${c}" stroke-width="1.5"/>
+            </svg>`;
+          case "pa_speaker":
+            return `<svg viewBox="0 0 50 50" preserveAspectRatio="none">
+              <rect x="4" y="4" width="42" height="42" rx="4" fill="${c}" fill-opacity="0.35" stroke="${c}" stroke-width="2.2"/>
+              <circle cx="25" cy="25" r="12" fill="none" stroke="${c}" stroke-width="2"/>
+              <circle cx="25" cy="25" r="4" fill="${c}"/>
+            </svg>`;
+          case "di_box":
+            return `<svg viewBox="0 0 44 34" preserveAspectRatio="none">
+              <rect x="3" y="3" width="38" height="28" rx="3" fill="${c}" fill-opacity="0.35" stroke="${c}" stroke-width="2"/>
+              <text x="22" y="21" text-anchor="middle" fill="${c}" font-size="12" font-weight="800" font-family="sans-serif">DI</text>
+            </svg>`;
+          case "light_spot":
+            return `<svg viewBox="0 0 50 50">
+              <polygon points="14,10 36,10 42,36 8,36" fill="${c}" fill-opacity="0.4" stroke="${c}" stroke-width="2"/>
+              <path d="M12,38 L4,48 M25,38 L25,49 M38,38 L46,48" stroke="${c}" stroke-width="2"/>
+            </svg>`;
+          case "camera_dolly":
+            return `<svg viewBox="0 0 70 50">
+              <rect x="10" y="14" width="36" height="22" rx="4" fill="${c}" fill-opacity="0.4" stroke="${c}" stroke-width="2.2"/>
+              <polygon points="46,19 62,12 62,38 46,31" fill="${c}"/>
+              <circle cx="20" cy="10" r="5" fill="${c}"/>
+              <circle cx="34" cy="10" r="5" fill="${c}"/>
+            </svg>`;
+          default:
+            return `<svg viewBox="0 0 50 50"><rect x="2" y="2" width="46" height="46" fill="${c}" fill-opacity="0.3" stroke="${c}" stroke-width="2"/></svg>`;
+        }
+      }
+
+      // --- Stage Sizing & Responsive Scale ---
+      function updateStageDimensions() {
+        const w = Math.max(0.5, parseFloat(state.stageW) || 12);
+        const d = Math.max(0.5, parseFloat(state.stageD) || 8);
+
+        const availableW = Math.max(260, Math.min(1040, centerStageArea.clientWidth - 44));
+        const availableH = Math.max(240, window.innerHeight - 235);
+
+        pxPerMeter = Math.max(18, Math.min(availableW / w, availableH / d, 85));
+
+        const boardW = Math.round(w * pxPerMeter);
+        const boardH = Math.round(d * pxPerMeter);
+
+        stageBoard.style.width = boardW + "px";
+        stageBoard.style.height = boardH + "px";
+
+        const major = pxPerMeter;
+        const minor = pxPerMeter / 2;
+        stageBoard.style.backgroundSize = `${major}px ${major}px, ${major}px ${major}px, ${minor}px ${minor}px, ${minor}px ${minor}px`;
+
+        stageInfoText.textContent = `Színpad: ${w}m × ${d}m | Szabad méretezés (0m-től) • Sarkok/élek húzása`;
+        document.getElementById("print-title-text").textContent = state.title;
+        document.getElementById("print-subtitle-text").textContent = `Színpad mérete: ${w}m × ${d}m`;
+      }
+
+      // --- Render Palette ---
+      function renderPalette() {
+        const categories = ["Összes", ...new Set(CATALOG.map(c => c.cat))];
+        const catPillsEl = document.getElementById("category-pills");
+        catPillsEl.innerHTML = "";
+
+        categories.forEach(cat => {
+          const btn = document.createElement("button");
+          btn.className = "cat-pill" + (state.activeCategory === cat ? " active" : "");
+          btn.textContent = cat;
+          btn.onclick = () => {
+            state.activeCategory = cat;
+            renderPalette();
+          };
+          catPillsEl.appendChild(btn);
+        });
+
+        const paletteGrid = document.getElementById("palette-grid");
+        paletteGrid.innerHTML = "";
+
+        const filtered = state.activeCategory === "Összes"
+          ? CATALOG
+          : CATALOG.filter(c => c.cat === state.activeCategory);
+
+        filtered.forEach(def => {
+          const card = document.createElement("div");
+          card.className = "palette-item";
+          card.draggable = true;
+          card.innerHTML = `${renderItemSVG({ ...def, id: "pal" })}<span>${def.label}</span>`;
+
+          // Tap / Click to add to center of stage
+          card.addEventListener("click", () => {
+            addItemToStage(def, state.stageW / 2 - def.w / 2, state.stageD / 2 - def.h / 2);
+            closeMobileDrawers();
+          });
+
+          // Desktop Drag & Drop
+          card.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", def.type);
+          });
+
+          paletteGrid.appendChild(card);
+        });
+      }
+
+      stageBoard.addEventListener("dragover", (e) => e.preventDefault());
+      stageBoard.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData("text/plain");
+        const def = CATALOG.find(c => c.type === type);
+        if (!def) return;
+        const rect = stageBoard.getBoundingClientRect();
+        const xm = (e.clientX - rect.left) / pxPerMeter - def.w / 2;
+        const ym = (e.clientY - rect.top) / pxPerMeter - def.h / 2;
+        addItemToStage(def, xm, ym);
+      });
+
+      function addItemToStage(def, xm, ym) {
+        pushHistory();
+        const countSame = state.items.filter(i => i.type === def.type).length + 1;
+        const newItem = {
+          id: uid(),
+          type: def.type,
+          name: `${def.label} ${countSame}`,
+          x: Math.max(0, Math.min(state.stageW - def.w, roundSnap(xm))),
+          y: Math.max(0, Math.min(state.stageD - def.h, roundSnap(ym))),
+          w: def.w,
+          h: def.h,
+          rot: 0,
+          color: def.color,
+          channel: def.isTech ? String(state.items.filter(i => i.isTech).length + 1) : "",
+          note: "",
+          isTech: !!def.isTech
+        };
+        state.items.push(newItem);
+        state.selectedId = newItem.id;
+        renderAll();
+      }
+
+      function roundSnap(val) {
+        if (!state.gridEnabled) return Math.round(val * 100) / 100;
+        return Math.round(val * 4) / 4; // 0.25m snap
+      }
+
+      // --- Render Stage Items & Handles ---
+      function renderStageItems() {
+        // Remove existing items
+        stageBoard.querySelectorAll(".stage-item").forEach(el => el.remove());
+
+        state.items.forEach((item, idx) => {
+          const el = document.createElement("div");
+          el.className = "stage-item" + (item.id === state.selectedId ? " selected" : "");
+          el.dataset.id = item.id;
+
+          // Allow 0x0 minimum size (ensure at least 4px clickable visual footprint if 0)
+          const visualW = Math.max(4, item.w * pxPerMeter);
+          const visualH = Math.max(4, item.h * pxPerMeter);
+
+          el.style.left = (item.x * pxPerMeter) + "px";
+          el.style.top = (item.y * pxPerMeter) + "px";
+          el.style.width = visualW + "px";
+          el.style.height = visualH + "px";
+          el.style.transform = `rotate(${item.rot || 0}deg)`;
+
+          el.innerHTML = `
+            <div class="item-index-badge">#${idx + 1}</div>
+            <div class="stage-item-visual">${renderItemSVG(item)}</div>
+          `;
+
+          // Selection & Dragging via Pointer Events (Mouse + Touch + Stylus)
+          el.addEventListener("pointerdown", (e) => {
+            if (e.target.classList.contains("handle")) return;
+            e.stopPropagation();
+            if (state.selectedId !== item.id) {
+              state.selectedId = item.id;
+              renderAll();
+            }
+            startDragItem(e, item.id);
+          });
+
+          // Resize & Rotate handles when selected
+          if (item.id === state.selectedId) {
+            const dirs = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+            dirs.forEach(dir => {
+              const h = document.createElement("div");
+              h.className = `handle handle-${dir}`;
+              h.addEventListener("pointerdown", (e) => {
+                e.stopPropagation();
+                startResizeItem(e, item.id, dir);
+              });
+              el.appendChild(h);
+            });
+
+            const rotH = document.createElement("div");
+            rotH.className = "handle handle-rotate";
+            rotH.title = "Forgatás";
+            rotH.addEventListener("pointerdown", (e) => {
+              e.stopPropagation();
+              startRotateItem(e, item.id);
+            });
+            el.appendChild(rotH);
+          }
+
+          stageBoard.appendChild(el);
+        });
+
+        itemCountText.textContent = `${state.items.length} elem`;
+      }
+
+      // Deselect when clicking empty stage
+      stageBoard.addEventListener("pointerdown", (e) => {
+        if (e.target === stageBoard || e.target.classList.contains("center-line-v") || e.target.classList.contains("center-line-h")) {
+          if (state.selectedId !== null) {
+            state.selectedId = null;
+            renderAll();
+          }
+        }
+      });
+
+      // --- Pointer Drag / Resize / Rotate ---
+      function startDragItem(e, id) {
+        const item = state.items.find(i => i.id === id);
+        if (!item) return;
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const origX = item.x;
+        const origY = item.y;
+        let moved = false;
+
+        function onMove(ev) {
+          const dx = (ev.clientX - startX) / pxPerMeter;
+          const dy = (ev.clientY - startY) / pxPerMeter;
+          if (!moved && (Math.abs(dx) > 0.02 || Math.abs(dy) > 0.02)) {
+            pushHistory();
+            moved = true;
+          }
+          if (moved) {
+            item.x = Math.max(0, roundSnap(origX + dx));
+            item.y = Math.max(0, roundSnap(origY + dy));
+            renderStageItems();
+            renderInspector();
+            renderLegend();
+          }
+        }
+
+        function onUp() {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+        }
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      }
+
+      function startResizeItem(e, id, dir) {
+        const item = state.items.find(i => i.id === id);
+        if (!item) return;
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const origX = item.x;
+        const origY = item.y;
+        const origW = item.w;
+        const origH = item.h;
+        let resized = false;
+
+        function onMove(ev) {
+          const dx = (ev.clientX - startX) / pxPerMeter;
+          const dy = (ev.clientY - startY) / pxPerMeter;
+          if (!resized && (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01)) {
+            pushHistory();
+            resized = true;
+          }
+          if (!resized) return;
+
+          let newX = origX;
+          let newY = origY;
+          let newW = origW;
+          let newH = origH;
+
+          // Free resizing down to 0x0
+          if (dir.includes("e")) {
+            newW = Math.max(0, roundSnap(origW + dx));
+          }
+          if (dir.includes("s")) {
+            newH = Math.max(0, roundSnap(origH + dy));
+          }
+          if (dir.includes("w")) {
+            const proposedW = Math.max(0, roundSnap(origW - dx));
+            newX = Math.max(0, origX + (origW - proposedW));
+            newW = proposedW;
+          }
+          if (dir.includes("n")) {
+            const proposedH = Math.max(0, roundSnap(origH - dy));
+            newY = Math.max(0, origY + (origH - proposedH));
+            newH = proposedH;
+          }
+
+          item.x = Number(newX.toFixed(2));
+          item.y = Number(newY.toFixed(2));
+          item.w = Number(newW.toFixed(2));
+          item.h = Number(newH.toFixed(2));
+
+          renderStageItems();
+          renderInspector();
+          renderLegend();
+        }
+
+        function onUp() {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+        }
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      }
+
+      function startRotateItem(e, id) {
+        const item = state.items.find(i => i.id === id);
+        if (!item) return;
+        const rect = stageBoard.getBoundingClientRect();
+        const cx = rect.left + (item.x + item.w / 2) * pxPerMeter;
+        const cy = rect.top + (item.y + item.h / 2) * pxPerMeter;
+        pushHistory();
+
+        function onMove(ev) {
+          const angle = Math.atan2(ev.clientY - cy, ev.clientX - cx) * (180 / Math.PI) + 90;
+          const snapped = state.gridEnabled ? Math.round(angle / 15) * 15 : Math.round(angle);
+          item.rot = ((snapped % 360) + 360) % 360;
+          renderStageItems();
+          renderInspector();
+        }
+
+        function onUp() {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+        }
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      }
+
+      // --- Render Legend Box (Jelmagyarázat) ---
+      function renderLegend() {
+        legendCount.textContent = `${state.items.length} tétel`;
+        if (state.items.length === 0) {
+          legendGrid.innerHTML = `<div style="font-size:12px; color:var(--text-muted);">Még nincs elhelyezett elem a színpadon.</div>`;
+          return;
+        }
+
+        legendGrid.innerHTML = "";
+        state.items.forEach((item, idx) => {
+          const card = document.createElement("div");
+          card.className = "legend-entry" + (item.id === state.selectedId ? " active" : "");
+          const chInfo = item.channel ? ` • Ch/ID: ${item.channel}` : "";
+          const noteInfo = item.note ? ` (${item.note})` : "";
+          card.innerHTML = `
+            <span class="legend-num">#${idx + 1}</span>
+            <span class="legend-swatch" style="background:${item.color};"></span>
+            <div class="legend-info">
+              <span class="legend-name">${escapeHtml(item.name)}${escapeHtml(noteInfo)}</span>
+              <span class="legend-meta">${item.w}m × ${item.h}m${escapeHtml(chInfo)}</span>
+            </div>
+          `;
+          card.addEventListener("click", () => {
+            state.selectedId = item.id;
+            renderAll();
+          });
+          legendGrid.appendChild(card);
+        });
+      }
+
+      // --- Render Inspector (Free number typing down to 0x0) ---
+      function renderInspector() {
+        const item = state.items.find(i => i.id === state.selectedId);
+        if (!item) {
+          inspectorContent.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin:0;">Válassz ki egy elemet a színpadon a méretezéshez, forgatáshoz vagy átnevezéshez.</p>`;
+          return;
+        }
+
+        const idx = state.items.findIndex(i => i.id === item.id) + 1;
+
+        inspectorContent.innerHTML = `
+          <div class="prop-grid">
+            <div class="prop-field full">
+              <label>#${idx} Elem megnevezése (Jelmagyarázatban)</label>
+              <input type="text" id="prop-name" value="${escapeAttr(item.name)}" />
+            </div>
+
+            <div class="prop-field">
+              <label>Szélesség (m) — min. 0</label>
+              <input type="text" inputmode="decimal" id="prop-w" value="${item.w}" />
+            </div>
+
+            <div class="prop-field">
+              <label>Mélység / Mag. (m) — min. 0</label>
+              <input type="text" inputmode="decimal" id="prop-h" value="${item.h}" />
+            </div>
+
+            <div class="prop-field">
+              <label>Pozíció X (m)</label>
+              <input type="text" inputmode="decimal" id="prop-x" value="${item.x}" />
+            </div>
+
+            <div class="prop-field">
+              <label>Pozíció Y (m)</label>
+              <input type="text" inputmode="decimal" id="prop-y" value="${item.y}" />
+            </div>
+
+            <div class="prop-field">
+              <label>Forgatás (°)</label>
+              <input type="text" inputmode="numeric" id="prop-rot" value="${item.rot || 0}" />
+            </div>
+
+            <div class="prop-field">
+              <label>Ch / DMX ID</label>
+              <input type="text" id="prop-ch" value="${escapeAttr(item.channel || "")}" placeholder="pl. 1 vagy DMX 12" />
+            </div>
+
+            <div class="prop-field full">
+              <label>Megjegyzés (állvány, típus, kellék)</label>
+              <input type="text" id="prop-note" value="${escapeAttr(item.note || "")}" placeholder="pl. Gémes állvány, +48V" />
+            </div>
+
+            <div class="prop-field full">
+              <label>Szín</label>
+              <div class="color-row" id="prop-colors">
+                ${COLOR_PALETTE.map(col => `<div class="color-chip ${item.color === col ? "active" : ""}" data-col="${col}" style="background:${col};"></div>`).join("")}
+                <input type="color" id="prop-custom-color" value="${item.color}" style="width:32px; height:28px; padding:0; border:none; background:none; cursor:pointer;" />
+              </div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn" id="btn-layer-up" title="Előrébb hozás">⬆ Előre</button>
+            <button class="btn" id="btn-layer-down" title="Hátrébb küldés">⬇ Hátra</button>
+            <button class="btn" id="btn-duplicate" title="Duplikálás">⧉ Másolat</button>
+            <button class="btn btn-danger" id="btn-delete" title="Törlés (Delete)">🗑 Törlés</button>
+          </div>
+        `;
+
+        // Free numeric input handlers (allows typing 0, 0., 0.05, 12, etc. without forcing 0.15)
+        const bindFreeNumber = (elId, propKey) => {
+          const inp = document.getElementById(elId);
+          inp.addEventListener("input", () => {
+            const raw = inp.value.replace(",", ".").trim();
+            if (raw === "" || raw === "-" || raw.endsWith(".")) return;
+            const parsed = parseFloat(raw);
+            if (!Number.isNaN(parsed) && parsed >= 0) {
+              item[propKey] = parsed;
+              markDirty(true);
+              renderStageItems();
+              renderLegend();
+              renderPatchList();
+            }
+          });
+          inp.addEventListener("blur", () => {
+            const raw = inp.value.replace(",", ".").trim();
+            const parsed = parseFloat(raw);
+            if (Number.isNaN(parsed) || parsed < 0) {
+              item[propKey] = 0;
+              inp.value = "0";
+            } else {
+              item[propKey] = parsed;
+              inp.value = String(parsed);
+            }
+            markDirty(true);
+            renderStageItems();
+            renderLegend();
+            renderPatchList();
+          });
+        };
+
+        bindFreeNumber("prop-w", "w");
+        bindFreeNumber("prop-h", "h");
+        bindFreeNumber("prop-x", "x");
+        bindFreeNumber("prop-y", "y");
+
+        const rotInp = document.getElementById("prop-rot");
+        rotInp.addEventListener("input", () => {
+          const parsed = parseFloat(rotInp.value);
+          if (!Number.isNaN(parsed)) {
+            item.rot = parsed;
+            markDirty(true);
+            renderStageItems();
+          }
+        });
+
+        document.getElementById("prop-name").addEventListener("input", (e) => {
+          item.name = e.target.value;
+          markDirty(true);
+          renderLegend();
+          renderPatchList();
+        });
+
+        document.getElementById("prop-ch").addEventListener("input", (e) => {
+          item.channel = e.target.value;
+          markDirty(true);
+          renderLegend();
+          renderPatchList();
+        });
+
+        document.getElementById("prop-note").addEventListener("input", (e) => {
+          item.note = e.target.value;
+          markDirty(true);
+          renderLegend();
+          renderPatchList();
+        });
+
+        document.querySelectorAll("#prop-colors .color-chip").forEach(chip => {
+          chip.addEventListener("click", () => {
+            pushHistory();
+            item.color = chip.dataset.col;
+            renderAll();
+          });
+        });
+
+        document.getElementById("prop-custom-color").addEventListener("input", (e) => {
+          item.color = e.target.value;
+          markDirty(true);
+          renderStageItems();
+          renderLegend();
+        });
+
+        document.getElementById("btn-layer-up").addEventListener("click", () => {
+          const i = state.items.findIndex(x => x.id === item.id);
+          if (i < state.items.length - 1) {
+            pushHistory();
+            [state.items[i], state.items[i + 1]] = [state.items[i + 1], state.items[i]];
+            renderAll();
+          }
+        });
+
+        document.getElementById("btn-layer-down").addEventListener("click", () => {
+          const i = state.items.findIndex(x => x.id === item.id);
+          if (i > 0) {
+            pushHistory();
+            [state.items[i], state.items[i - 1]] = [state.items[i - 1], state.items[i]];
+            renderAll();
+          }
+        });
+
+        document.getElementById("btn-duplicate").addEventListener("click", () => {
+          pushHistory();
+          const copy = {
+            ...item,
+            id: uid(),
+            name: item.name + " (másolat)",
+            x: Math.min(state.stageW, item.x + 0.5),
+            y: Math.min(state.stageD, item.y + 0.5)
+          };
+          state.items.push(copy);
+          state.selectedId = copy.id;
+          renderAll();
+        });
+
+        document.getElementById("btn-delete").addEventListener("click", () => {
+          pushHistory();
+          state.items = state.items.filter(x => x.id !== item.id);
+          state.selectedId = null;
+          renderAll();
+        });
+      }
+
+      // --- Render Patch List ---
+      function renderPatchList() {
+        patchCount.textContent = `${state.items.length} elem`;
+        patchTbody.innerHTML = "";
+        printPatchTbody.innerHTML = "";
+
+        state.items.forEach((item, idx) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>#${idx + 1}</strong></td>
+            <td><input type="text" value="${escapeAttr(item.channel || "")}" data-field="channel" /></td>
+            <td>
+              <div style="font-weight:600; margin-bottom:2px;">${escapeHtml(item.name)}</div>
+              <input type="text" value="${escapeAttr(item.note || "")}" placeholder="Megjegyzés..." data-field="note" />
+            </td>
+          `;
+
+          tr.querySelectorAll("input").forEach(inp => {
+            inp.addEventListener("input", () => {
+              item[inp.dataset.field] = inp.value;
+              markDirty(true);
+              renderLegend();
+              if (state.selectedId === item.id) renderInspector();
+            });
+          });
+
+          patchTbody.appendChild(tr);
+
+          // Print table row
+          const ptr = document.createElement("tr");
+          ptr.innerHTML = `
+            <td>#${idx + 1}</td>
+            <td>${escapeHtml(item.channel || "-")}</td>
+            <td>${escapeHtml(item.name)}</td>
+            <td>${escapeHtml(item.type)}</td>
+            <td>${item.w}m × ${item.h}m</td>
+            <td>${escapeHtml(item.note || "")}</td>
+          `;
+          printPatchTbody.appendChild(ptr);
+        });
+      }
+
+      function renderAll() {
+        updateStageDimensions();
+        renderStageItems();
+        renderLegend();
+        renderInspector();
+        renderPatchList();
+      }
+
+      // --- Topbar & Global Controls ---
+      projectTitleInput.addEventListener("input", (e) => {
+        state.title = e.target.value;
+        markDirty(true);
+        document.getElementById("print-title-text").textContent = state.title;
+      });
+
+      function bindStageDim(inputEl, key) {
+        inputEl.addEventListener("input", () => {
+          const val = parseFloat(inputEl.value.replace(",", "."));
+          if (!Number.isNaN(val) && val > 0) {
+            state[key] = val;
+            markDirty(true);
+            updateStageDimensions();
+            renderStageItems();
+          }
+        });
+      }
+
+      bindStageDim(stageWidthInput, "stageW");
+      bindStageDim(stageDepthInput, "stageD");
+
+      btnUndo.addEventListener("click", undo);
+      btnRedo.addEventListener("click", redo);
+
+      document.getElementById("btn-toggle-grid").addEventListener("click", (e) => {
+        state.gridEnabled = !state.gridEnabled;
+        stageBoard.classList.toggle("no-grid", !state.gridEnabled);
+        e.target.textContent = `Rács: ${state.gridEnabled ? "BE" : "KI"}`;
+        e.target.classList.toggle("btn-active", state.gridEnabled);
+      });
+
+      document.getElementById("btn-toggle-badges").addEventListener("click", (e) => {
+        state.showBadges = !state.showBadges;
+        stageBoard.classList.toggle("hide-badges", !state.showBadges);
+        e.target.classList.toggle("btn-active", state.showBadges);
+      });
+
+      // Fullscreen toggle
+      const btnFullscreen = document.getElementById("btn-fullscreen");
+      btnFullscreen.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+
+      document.addEventListener("fullscreenchange", () => {
+        const isFs = !!document.fullscreenElement;
+        btnFullscreen.textContent = isFs ? "✕ Kilépés" : "⛶ Teljes képernyő";
+        btnFullscreen.classList.toggle("btn-active", isFs);
+        setTimeout(() => {
+          updateStageDimensions();
+          renderStageItems();
+        }, 120);
+      });
+
+      // Save JSON
+      document.getElementById("btn-save-json").addEventListener("click", () => {
+        const payload = {
+          app: "RiderBox",
+          version: 2,
+          exportedAt: new Date().toISOString(),
+          title: state.title,
+          stageW: state.stageW,
+          stageD: state.stageD,
+          items: state.items
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const safeName = (state.title || "riderbox-terv").toLowerCase().replace(/[^a-z0-9áéíóöőúüű_-]+/gi, "-");
+        a.href = url;
+        a.download = `${safeName}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        markDirty(false);
+      });
+
+      // Open JSON (Button & Drag-Drop)
+      const jsonFileInput = document.getElementById("json-file-input");
+      document.getElementById("btn-open-json").addEventListener("click", () => {
+        jsonFileInput.click();
+      });
+
+      jsonFileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) loadJsonFile(file);
+        jsonFileInput.value = "";
+      });
+
+      function loadJsonFile(file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (!Array.isArray(data.items)) throw new Error("Érvénytelen fájlformátum.");
+            pushHistory();
+            state.title = data.title || file.name.replace(/\.json$/i, "");
+            state.stageW = parseFloat(data.stageW) || 12;
+            state.stageD = parseFloat(data.stageD) || 8;
+            state.items = data.items.map(it => ({
+              ...it,
+              id: it.id || uid(),
+              w: Number(it.w) >= 0 ? Number(it.w) : 1,
+              h: Number(it.h) >= 0 ? Number(it.h) : 1
+            }));
+            state.selectedId = null;
+            syncInputsFromState();
+            renderAll();
+            markDirty(false);
+          } catch (err) {
+            alert("Hiba a JSON betöltésekor: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // Global Drag & Drop for JSON files
+      const dropOverlay = document.getElementById("drop-overlay");
+      window.addEventListener("dragover", (e) => {
+        if (e.dataTransfer && Array.from(e.dataTransfer.types).includes("Files")) {
+          e.preventDefault();
+          dropOverlay.classList.add("active");
+        }
+      });
+      window.addEventListener("dragleave", (e) => {
+        if (e.relatedTarget === null) dropOverlay.classList.remove("active");
+      });
+      window.addEventListener("drop", (e) => {
+        dropOverlay.classList.remove("active");
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const file = e.dataTransfer.files[0];
+          if (file.name.toLowerCase().endsWith(".json")) {
+            e.preventDefault();
+            loadJsonFile(file);
+          }
+        }
+      });
+
+      // Download Standalone HTML Webpage
+      document.getElementById("btn-download-html").addEventListener("click", () => {
+        const docHtml = "<!DOCTYPE html>
+" + document.documentElement.outerHTML;
+        const blob = new Blob([docHtml], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "riderbox-stage-plot.html";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // Print / PDF
+      document.getElementById("btn-print").addEventListener("click", () => {
+        state.selectedId = null;
+        renderStageItems();
+        window.print();
+      });
+
+      // Load Theater Sample
+      document.getElementById("btn-load-sample").addEventListener("click", () => {
+        pushHistory();
+        state.title = "Kamaraszínház — Díszlet & Hang Terv";
+        state.stageW = 10;
+        state.stageD = 8;
+        state.items = [
+          { id: uid(), type: "black_velvet", name: "Hátsó fekete bársony", x: 1, y: 0.3, w: 8, h: 0.4, rot: 0, color: "#1e293b", channel: "", note: "Teljes takarás", isTech: false },
+          { id: uid(), type: "real_wall", name: "Bal oldali tűzfal", x: 0, y: 0.5, w: 0.4, h: 7, rot: 0, color: "#64748b", channel: "", note: "Épített fal", isTech: false },
+          { id: uid(), type: "set_door", name: "Díszletfal ajtóval", x: 1.5, y: 2.2, w: 2.5, h: 0.3, rot: 0, color: "#f59e0b", channel: "", note: "Bejárat 1", isTech: false },
+          { id: uid(), type: "sofa", name: "Bársony kanapé", x: 5.5, y: 2.5, w: 2.2, h: 0.9, rot: 0, color: "#f59e0b", channel: "", note: "Kellék", isTech: false },
+          { id: uid(), type: "actor_top", name: "Főszereplő (A)", x: 4.5, y: 4.5, w: 0.65, h: 0.55, rot: 180, color: "#38bdf8", channel: "RF 1", note: "Fejmikrofon", isTech: true },
+          { id: uid(), type: "arrow_curved", name: "Jelenetváltás mozgás", x: 2.5, y: 3.2, w: 2.0, h: 1.2, rot: 0, color: "#fb923c", channel: "", note: "I. felvonás", isTech: false },
+          { id: uid(), type: "fx_corner", name: "Ködgép FX sarok", x: 8.2, y: 0.8, w: 1.4, h: 1.4, rot: 0, color: "#ef4444", channel: "DMX 200", note: "Hazer + ventilátor", isTech: true },
+          { id: uid(), type: "main_curtain", name: "Főfüggöny", x: 0.5, y: 7.3, w: 9, h: 0.45, rot: 0, color: "#dc2626", channel: "", note: "Proszcénium", isTech: false }
+        ];
+        state.selectedId = null;
+        syncInputsFromState();
+        renderAll();
+      });
+
+      // Tablet / Mobile Drawers
+      const sidebarLeft = document.getElementById("sidebar-left");
+      const sidebarRight = document.getElementById("sidebar-right");
+      const drawerBackdrop = document.getElementById("drawer-backdrop");
+      const btnCloseLeft = document.getElementById("btn-close-left-drawer");
+      const btnCloseRight = document.getElementById("btn-close-right-drawer");
+
+      function closeMobileDrawers() {
+        sidebarLeft.classList.remove("open");
+        sidebarRight.classList.remove("open");
+        drawerBackdrop.classList.remove("open");
+      }
+
+      document.getElementById("btn-open-left-drawer").addEventListener("click", () => {
+        sidebarLeft.classList.add("open");
+        drawerBackdrop.classList.add("open");
+        btnCloseLeft.style.display = "inline-flex";
+      });
+
+      document.getElementById("btn-open-right-drawer").addEventListener("click", () => {
+        sidebarRight.classList.add("open");
+        drawerBackdrop.classList.add("open");
+        btnCloseRight.style.display = "inline-flex";
+      });
+
+      btnCloseLeft.addEventListener("click", closeMobileDrawers);
+      btnCloseRight.addEventListener("click", closeMobileDrawers);
+      drawerBackdrop.addEventListener("click", closeMobileDrawers);
+
+      // Keyboard shortcuts
+      window.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+          e.preventDefault();
+          if (e.shiftKey) redo(); else undo();
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+          e.preventDefault();
+          redo();
+          return;
+        }
+
+        const item = state.items.find(i => i.id === state.selectedId);
+        if (!item) return;
+
+        if (e.key === "Delete" || e.key === "Backspace") {
+          e.preventDefault();
+          pushHistory();
+          state.items = state.items.filter(x => x.id !== item.id);
+          state.selectedId = null;
+          renderAll();
+        } else if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+          e.preventDefault();
+          const step = e.shiftKey ? 0.5 : 0.1;
+          if (e.key === "ArrowUp") item.y = Math.max(0, Number((item.y - step).toFixed(2)));
+          if (e.key === "ArrowDown") item.y = Number((item.y + step).toFixed(2));
+          if (e.key === "ArrowLeft") item.x = Math.max(0, Number((item.x - step).toFixed(2)));
+          if (e.key === "ArrowRight") item.x = Number((item.x + step).toFixed(2));
+          markDirty(true);
+          renderStageItems();
+          renderInspector();
+        }
+      });
+
+      window.addEventListener("resize", () => {
+        updateStageDimensions();
+        renderStageItems();
+      });
+
+      function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, m => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[m]));
+      }
+
+      function escapeAttr(str) {
+        return escapeHtml(str);
+      }
+
+      // Init
+      renderPalette();
+      renderAll();
+      markDirty(false);
+    })();
+  </script>
+</body>
+</html>
